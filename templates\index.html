@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wear Well - Billing Software</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo-container">
+                <svg class="cart-icon" viewBox="0 0 24 24" fill="white">
+                    <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+                <div style="display:flex;flex-direction:column;line-height:1;">
+                    <span class="logo-text">Wear Well</span>
+                    <span class="instagram-handle">@wear_well_123</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <svg class="user-icon" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                <span>Cashier: <span id="cashier-name" style="cursor: pointer; text-decoration: underline;" title="Click to edit">vishal</span></span>
+            </div>
+            <div class="date-info">
+                <svg class="calendar-icon" viewBox="0 0 24 24" fill="white">
+                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                </svg>
+                <span>Date: <span id="current-date"></span></span>
+            </div>
+            <div style="margin-left: 16px; display:flex; align-items:center; gap:8px;">
+                <label for="billing-style-select" style="color:white; font-size:13px;">Invoice Style</label>
+                <select id="billing-style-select" style="padding:4px; border-radius:4px;">
+                    <option value="thermal">Thermal (80mm)</option>
+                    <option value="a4">A4 Invoice</option>
+                </select>
+                <div style="display:flex; align-items:center; gap:6px; margin-left:12px;">
+                    <input type="text" id="bill-search-input" class="form-input" placeholder="Search bill (e.g. BILL-20260205-0011)" style="padding:6px; border-radius:4px; width:220px;">
+                    <button class="btn btn-secondary" id="bill-search-btn">Find Bill</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <!-- Scan / Search Product -->
+            <div class="section-card">
+                <h3 class="section-title">Scan / Search Product</h3>
+                <div class="search-container">
+                    <input type="text" id="product-search" class="search-input" placeholder="Enter product name or barcode...">
+                    <button class="btn btn-primary btn-scan" id="scan-btn">
+                        <svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+                            <path d="M4 4h4v2H6v2H4V4zm16 0v4h-2V6h-2V4h4zM4 16v4h4v-2H6v-2H4zm16 4v-4h-2v2h-2v2h4z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div id="product-results" class="product-results"></div>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="section-card">
+                <h3 class="section-title">Customer Info</h3>
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text" id="customer-name" class="form-input" placeholder="Enter customer name">
+                </div>
+                <div class="form-group">
+                    <label>Phone:</label>
+                    <input type="text" id="customer-phone" class="form-input" placeholder="Enter phone number">
+                </div>
+                <div class="form-group">
+                    <label>Loyalty Card:</label>
+                    <input type="text" id="customer-loyalty" class="form-input" placeholder="Enter loyalty card number">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary btn-block" style="flex: 1;" id="add-customer-btn">Add Customer</button>
+                </div>
+                <div id="customer-results" class="customer-results"></div>
+            </div>
+
+
+        </div>
+
+        <!-- Middle Panel -->
+        <div class="middle-panel">
+            <!-- Daily Stock Management -->
+            <div class="stock-section">
+                <h3 class="section-title">Daily Stock Management</h3>
+                <div class="stock-cards">
+                    <div class="stock-card" data-category="Shirts">
+                        <div class="stock-image">👔</div>
+                        <div class="stock-info">
+                            <div class="stock-category">Shirts</div>
+                            <div class="stock-quantity" id="stock-shirts">0 in Stock</div>
+                        </div>
+                    </div>
+                    <div class="stock-card" data-category="Pants">
+                        <div class="stock-image">👖</div>
+                        <div class="stock-info">
+                            <div class="stock-category">Pants</div>
+                            <div class="stock-quantity" id="stock-pants">0 in Stock</div>
+                        </div>
+                    </div>
+                    <div class="stock-card" data-category="Dhotis">
+                        <div class="stock-image">🫱</div>
+                        <div class="stock-info">
+                            <div class="stock-category">Dhotis</div>
+                            <div class="stock-quantity" id="stock-dhotis">0 in Stock</div>
+                        </div>
+                    </div>
+                    <div class="stock-card" data-category="Saree">
+                        <div class="stock-image">👗</div>
+                        <div class="stock-info">
+                            <div class="stock-category">Saree</div>
+                            <div class="stock-quantity" id="stock-saree">0 in Stock</div>
+                        </div>
+                    </div>
+                    <div class="stock-card" data-category="Gadgets">
+                        <div class="stock-image">✨</div>
+                        <div class="stock-info">
+                            <div class="stock-category">Gadgets</div>
+                            <div class="stock-quantity" id="stock-gadgets">0 in Stock</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-manage-stock" id="manage-stock-btn">Manage Stock</button>
+                </div>
+            </div>
+
+            <!-- Shopping Cart -->
+            <div class="cart-section">
+                <h3 class="section-title">Shopping Cart</h3>
+                <div class="cart-table-container">
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Barcode</th>
+                                <th>Article Name</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Discount</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-items">
+                            <!-- Cart items will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cart-actions">
+                    <button class="btn btn-danger" id="remove-item-btn">
+                        <svg viewBox="0 0 24 24" fill="white" width="18" height="18">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                        Remove Item
+                    </button>
+                    <button class="btn btn-secondary" id="clear-cart-btn">
+                        <svg viewBox="0 0 24 24" fill="white" width="18" height="18">
+                            <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Clear Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <!-- Order Summary -->
+            <div class="summary-section">
+                <h3 class="section-title">Order Summary</h3>
+                <div class="summary-item">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">₹0.00</span>
+                </div>
+                <div class="summary-item">
+                    <span>Discount:</span>
+                    <span id="discount">- ₹0.00</span>
+                </div>
+                <div class="summary-item summary-total">
+                    <span>Grand Total:</span>
+                    <span id="grand-total">₹0.00</span>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="payment-section">
+                <h3 class="section-title">Payment Method</h3>
+                <div class="payment-buttons">
+                    <button class="btn btn-payment active" data-method="Cash" id="pay-cash">Cash</button>
+                    <button class="btn btn-payment" data-method="Card" id="pay-card">Card</button>
+                    <button class="btn btn-payment" data-method="UPI" id="pay-upi">UPI</button>
+                </div>
+            </div>
+
+            <!-- Order Actions -->
+            <div class="actions-section">
+                <button class="btn btn-success btn-large" id="print-bill-btn">
+                    <svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>
+                    </svg>
+                    Print Bill
+                </button>
+                <button class="btn btn-primary" id="save-draft-btn">Save Draft</button>
+                <button class="btn btn-warning" id="hold-order-btn">Hold Order</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Bar -->
+    <footer class="bottom-bar">
+        <div class="bottom-left">
+            <button class="btn btn-icon" id="add-note-btn">
+                <svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+                Add Note
+            </button>
+            <button class="btn btn-icon" id="stock-check-btn">
+                <svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                Stock Check
+            </button>
+            <button class="btn btn-primary" id="customers-btn">
+                <svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                Customers
+            </button>
+            <button class="btn btn-primary" id="statements-btn" onclick="window.location='/statements'" style="margin-left:8px;">
+                <svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+                    <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zM7 9h14V7H7v2zm0 4h14v-2H7v2zM7 5h14V3H7v2z"/>
+                </svg>
+                Statements
+            </button>
+        </div>
+        <div class="bottom-right">
+            <div class="total-display">
+                TOTAL AMOUNT: <span id="footer-total">₹0.00</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <div id="cashier-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Edit Cashier Profile</h2>
+            <div class="form-group">
+                <label>Cashier Name:</label>
+                <input type="text" id="cashier-name-input" class="form-input" placeholder="Enter cashier name">
+            </div>
+            <button class="btn btn-primary" id="save-cashier-btn">Save</button>
+        </div>
+    </div>
+
+    <div id="customer-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <span class="close">&times;</span>
+            <h2 id="customer-modal-title">Add Customer</h2>
+            
+            <!-- Search Existing Customer -->
+            <div style="margin-bottom: 15px; padding: 10px; background-color: #f0f4f8; border-radius: 4px; border: 1px solid #cbd5e1;">
+                <label style="font-weight: bold; display: block; margin-bottom: 8px;">Search Existing Customer:</label>
+                <input type="text" id="modal-search-customer" class="form-input" placeholder="Search by name, phone, or loyalty card..." style="width:100%; margin-bottom: 8px;">
+                <div id="modal-customer-results" style="max-height: 150px; overflow-y: auto;"></div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button type="button" class="btn btn-primary" style="flex: 1; padding: 10px; font-size: 14px; font-weight: bold; cursor: pointer;" id="update-customer-btn" onclick="handleUpdateCustomer()">Update</button>
+                <button type="button" class="btn btn-warning" style="flex: 1; padding: 10px; font-size: 14px; font-weight: bold; cursor: pointer;" id="clear-top-customer-btn">Clear</button>
+            </div>
+            <table style="width:100%; border-collapse: collapse; margin-bottom:10px;">
+                <tbody>
+                    <tr>
+                        <td style="padding:10px; font-weight:bold;">Name: <span style="color: red;">*</span></td>
+                        <td style="padding:10px;"><input type="text" id="modal-customer-name" class="form-input" placeholder="Enter customer name" required style="width:100%;"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px; font-weight:bold;">Phone:</td>
+                        <td style="padding:10px;"><input type="text" id="modal-customer-phone" class="form-input" placeholder="Enter phone number" style="width:100%;"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px; font-weight:bold;">Email:</td>
+                        <td style="padding:10px;"><input type="email" id="modal-customer-email" class="form-input" placeholder="Enter email" style="width:100%;"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px; font-weight:bold;">Loyalty Card:</td>
+                        <td style="padding:10px;"><input type="text" id="modal-customer-loyalty" class="form-input" placeholder="Enter loyalty card number" style="width:100%;"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px; font-weight:bold;">Address:</td>
+                        <td style="padding:10px;"><textarea id="modal-customer-address" class="form-input" rows="3" placeholder="Enter address" style="width:100%;"></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="customer-ok-button" style="display: none;">
+                <button class="btn btn-primary" style="width: 100%;" id="ok-customer-btn">OK</button>
+            </div>
+            <div id="customer-message" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <div id="stock-management-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <span class="close">&times;</span>
+            <h2>Manage Stock & Products</h2>
+            <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center;">
+                <div style="flex: 1;">
+                    <label style="font-weight: bold; margin-right: 10px;">Filter by Category:</label>
+                    <select id="stock-category-filter" class="form-input" style="width: 250px;">
+                        <option value="">All Categories</option>
+                        <option value="Shirts">Shirts</option>
+                        <option value="Pants">Pants</option>
+                        <option value="Dhotis">Dhotis</option>
+                        <option value="Saree">Saree</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div id="products-list" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <div id="product-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <span class="close">&times;</span>
+            <h2 id="product-modal-title">Add Product</h2>
+            <div class="form-group">
+                <label>Barcode: <span style="color: red;">*</span></label>
+                <input type="text" id="modal-product-barcode" class="form-input" placeholder="Enter barcode" required>
+            </div>
+            <div class="form-group">
+                <label>Product Name: <span style="color: red;">*</span></label>
+                <input type="text" id="modal-product-name" class="form-input" placeholder="Enter product name" required>
+            </div>
+            <div class="form-group">
+                <label>Category: <span style="color: red;">*</span></label>
+                <select id="modal-product-category" class="form-input" required>
+                    <option value="">Select category</option>
+                    <option value="Shirts">Shirts</option>
+                    <option value="Pants">Pants</option>
+                    <option value="Dhotis">Dhotis</option>
+                    <option value="Saree">Saree</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Price: <span style="color: red;">*</span></label>
+                <input type="number" id="modal-product-price" class="form-input" placeholder="Enter price" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+                <label>Stock Quantity: <span style="color: red;">*</span></label>
+                <input type="number" id="modal-product-stock" class="form-input" placeholder="Enter stock quantity" min="0" required>
+            </div>
+            <div id="product-buttons" style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" style="flex: 1;" id="save-product-btn">Save</button>
+                <button class="btn btn-secondary" style="flex: 1;" id="cancel-product-btn">Cancel</button>
+            </div>
+            <div id="product-ok-button" style="display: none;">
+                <button class="btn btn-primary" style="width: 100%;" id="ok-product-btn">OK</button>
+            </div>
+            <div id="product-message" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <div id="note-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add Note</h2>
+            <textarea id="order-note" placeholder="Enter order notes..."></textarea>
+            <button class="btn btn-primary" id="save-note-btn">Save Note</button>
+        </div>
+    </div>
+
+    <!-- Remove Item Modal -->
+    <div id="remove-item-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close">&times;</span>
+            <h2>Remove Item</h2>
+            <p>Select a product from the cart to remove:</p>
+            <div id="remove-item-list" style="max-height:300px; overflow-y:auto; margin-top:10px;"></div>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button id="remove-item-confirm-selected" class="btn btn-danger">Remove Selected</button>
+                <button id="remove-item-cancel" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/cart.js"></script>
+    <script src="/static/js/products.js"></script>
+    <script src="/static/js/orders.js"></script>
+    <script src="/static/js/print.js"></script>
+    <script src="/static/js/customers.js"></script>
+    <script src="/static/js/stock-management.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
