@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Check - Wear Well</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <div class="logo-container">
+                <svg class="cart-icon" viewBox="0 0 24 24" fill="white">
+                    <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+                <div style="display:flex;flex-direction:column;line-height:1;">
+                    <span class="logo-text">Wear Well</span>
+                    <span class="instagram-handle">@wear_well_123</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div style="font-size:16px; color: white;">
+                <a href="/" style="color: white; text-decoration: underline;">Back to POS</a>
+            </div>
+        </div>
+    </header>
+
+    <main style="padding: 20px;">
+        <h2 style="color:#1e3a8a; margin-bottom: 15px;">Stock Check - Low Stock Items</h2>
+        <div id="low-stock-list">Loading...</div>
+        <div style="margin-top: 20px;">
+            <button id="refresh-low-stock" class="btn btn-primary">Refresh</button>
+            <button id="confirm-all-low-stock" class="btn btn-success" style="margin-left:10px;">Confirm All Stocks</button>
+        </div>
+
+        <!-- Daily Sales Section -->
+        <section style="margin-top:30px; background: #fff; padding:15px; border-radius:8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+            <h3 style="margin-bottom:10px; color:#1e3a8a;">Daily Product Sales</h3>
+            <div style="margin-bottom:10px;">
+                <input type="date" id="sales-date" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+                <input type="text" id="sales-search" placeholder="Search products..." style="padding:8px; margin-left:10px; border:1px solid #cbd5e1; border-radius:4px; width:200px;">
+                <button id="load-daily-sales" class="btn btn-primary" style="margin-left:10px;">Load Sales</button>
+                <button id="print-daily-sales" class="btn btn-secondary" style="margin-left:10px;">Print List</button>
+            </div>
+            <div id="daily-sales-list">Select a date to load sales data.</div>
+            <div id="grand-total" style="margin-top:10px; font-weight:bold; font-size:18px;"></div>
+        </section>
+        <!-- Add Product Form -->
+        <section style="margin-top:30px; background: #fff; padding:15px; border-radius:8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+            <h3 style="margin-bottom:10px; color:#1e3a8a;">Add New Product</h3>
+            <table style="width:100%; border-collapse: collapse; margin-bottom:10px;">
+                <thead>
+                    <tr style="background:#f1f5f9;">
+                        <th style="padding:10px; text-align:left">Barcode</th>
+                        <th style="padding:10px; text-align:left">Product Name</th>
+                        <th style="padding:10px; text-align:left">Category</th>
+                        <th style="padding:10px; text-align:left">Price</th>
+                        <th style="padding:10px; text-align:left">Stock</th>
+                        <th style="padding:10px; text-align:center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding:10px;"><input id="sc-barcode" placeholder="Barcode (8-13 digits)" style="padding:8px; width:100%; border:1px solid #cbd5e1; border-radius:4px;"></td>
+                        <td style="padding:10px;"><input id="sc-name" placeholder="Product Name" style="padding:8px; width:100%; border:1px solid #cbd5e1; border-radius:4px;"></td>
+                        <td style="padding:10px;">
+                            <select id="sc-category" style="padding:8px; width:100%; border:1px solid #cbd5e1; border-radius:4px;">
+                                <option value="">Select category</option>
+                                <option value="Shirts">Shirts</option>
+                                <option value="Pants">Pants</option>
+                                <option value="Dhotis">Dhotis</option>
+                                <option value="Saree">Saree</option>
+                                <option value="Gadgets">Gadgets</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </td>
+                        <td style="padding:10px;"><input id="sc-price" type="number" step="0.01" placeholder="Price" style="padding:8px; width:100%; border:1px solid #cbd5e1; border-radius:4px;"></td>
+                        <td style="padding:10px;"><input id="sc-stock" type="number" placeholder="Stock" style="padding:8px; width:100%; border:1px solid #cbd5e1; border-radius:4px;"></td>
+                        <td style="padding:10px; text-align:center;"><button id="sc-add-btn" class="btn btn-primary">Add Product</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="sc-message" style="margin-top:10px;"></div>
+        </section>
+    </main>
+
+    <script src="/static/js/api.js"></script>
+    <script>
+        async function renderLowStock() {
+            const div = document.getElementById('low-stock-list');
+            try {
+                const items = await API.getLowStock();
+                if (!items || items.length === 0) {
+                    div.innerHTML = '<p>No low stock items found.</p>';
+                    return;
+                }
+
+                div.innerHTML = `
+                    <table style="width:100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background:#f1f5f9;">
+                                <th style="padding:10px; text-align:left">Barcode</th>
+                                <th style="padding:10px; text-align:left">Name</th>
+                                <th style="padding:10px; text-align:right">Stock</th>
+                                <th style="padding:10px; text-align:center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.map(it => `
+                                <tr style="border-bottom:1px solid #e2e8f0;">
+                                    <td style="padding:10px">${it.barcode}</td>
+                                    <td style="padding:10px">${it.name}</td>
+                                    <td style="padding:10px; text-align:right">${it.stock_quantity}</td>
+                                    <td style="padding:10px; text-align:center">
+                                        <button class="btn btn-primary" onclick="openManageStock(${it.id})">Open</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                console.error(err);
+                div.innerHTML = '<p style="color:red">Error loading low stock items: ' + err.message + '</p>';
+            }
+        }
+
+        function openManageStock(id) {
+            // Open manage stock modal in main app by navigating to index and opening modal with query param
+            window.location = '/?open_stock=' + id;
+        }
+
+        document.getElementById('refresh-low-stock').addEventListener('click', renderLowStock);
+
+        document.getElementById('confirm-all-low-stock').addEventListener('click', async () => {
+            try {
+                const items = await API.getLowStock();
+                if (!items || items.length === 0) {
+                    alert('No items to confirm');
+                    return;
+                }
+
+                for (const it of items) {
+                    // Prompt for new stock value
+                    const input = prompt(`Enter new stock for ${it.name} (current: ${it.stock_quantity})`, it.stock_quantity);
+                    if (input === null) continue; // skipped
+                    const newStock = parseInt(input);
+                    if (isNaN(newStock) || newStock < 0) continue;
+
+                    await API.adjustStock({ product_id: it.id, quantity_change: newStock - it.stock_quantity, notes: 'Bulk confirm from stock check' });
+                }
+
+                alert('Confirmed updates. Refreshing...');
+                renderLowStock();
+            } catch (err) {
+                console.error(err);
+                alert('Error confirming stocks: ' + err.message);
+            }
+        });
+
+        // Initial render
+        renderLowStock();
+
+        // Daily Sales
+        document.getElementById('load-daily-sales').addEventListener('click', loadDailySales);
+        document.getElementById('print-daily-sales').addEventListener('click', printDailySales);
+        document.getElementById('sales-search').addEventListener('input', loadDailySales);
+
+        let dailySalesData = null;
+
+        async function loadDailySales() {
+            const dateInput = document.getElementById('sales-date').value;
+            const searchInput = document.getElementById('sales-search').value.toLowerCase();
+            const listDiv = document.getElementById('daily-sales-list');
+            const totalDiv = document.getElementById('grand-total');
+            
+            if (!dateInput) {
+                listDiv.innerHTML = 'Please select a date.';
+                totalDiv.textContent = '';
+                return;
+            }
+            
+            try {
+                if (!dailySalesData || dailySalesData.date !== dateInput) {
+                    dailySalesData = await API.getDailySales(dateInput);
+                    dailySalesData.date = dateInput;
+                }
+                
+                let filteredSales = dailySalesData.sales;
+                if (searchInput) {
+                    filteredSales = dailySalesData.sales.filter(item => 
+                        item.name.toLowerCase().includes(searchInput) ||
+                        item.barcode.toLowerCase().includes(searchInput) ||
+                        item.category.toLowerCase().includes(searchInput)
+                    );
+                }
+                
+                if (!filteredSales || filteredSales.length === 0) {
+                    listDiv.innerHTML = searchInput ? 'No sales found matching your search.' : 'No sales found for this date.';
+                    totalDiv.textContent = '';
+                    return;
+                }
+                
+                const filteredTotal = filteredSales.reduce((sum, item) => sum + item.total_revenue, 0);
+                
+                listDiv.innerHTML = `
+                    <table style="width:100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background:#f1f5f9;">
+                                <th style="padding:10px; text-align:left">Barcode</th>
+                                <th style="padding:10px; text-align:left">Name</th>
+                                <th style="padding:10px; text-align:left">Category</th>
+                                <th style="padding:10px; text-align:right">Quantity</th>
+                                <th style="padding:10px; text-align:right">Revenue</th>
+                                <th style="padding:10px; text-align:center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filteredSales.map(item => `
+                                <tr style="border-bottom:1px solid #e2e8f0;">
+                                    <td style="padding:10px">${item.barcode}</td>
+                                    <td style="padding:10px">${item.name}</td>
+                                    <td style="padding:10px">${item.category}</td>
+                                    <td style="padding:10px; text-align:right">${item.total_quantity}</td>
+                                    <td style="padding:10px; text-align:right">₹${item.total_revenue.toFixed(2)}</td>
+                                    <td style="padding:10px; text-align:center">
+                                        <button class="btn btn-danger" onclick="deleteSaleItem(${item.id})">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                totalDiv.textContent = `Grand Total: ₹${filteredTotal.toFixed(2)}`;
+            } catch (err) {
+                console.error(err);
+                listDiv.innerHTML = '<p style="color:red">Error loading sales: ' + err.message + '</p>';
+                totalDiv.textContent = '';
+            }
+        }
+
+        function printDailySales() {
+            const printContent = document.getElementById('daily-sales-list').innerHTML;
+            const totalContent = document.getElementById('grand-total').textContent;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head><title>Daily Sales Report</title></head>
+                <body>
+                    <h2>Daily Sales Report</h2>
+                    ${printContent}
+                    <br>
+                    ${totalContent}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function deleteSaleItem(productId) {
+            if (!dailySalesData) {
+                alert('No sales data loaded. Please load sales first.');
+                return;
+            }
+
+            const dateInput = document.getElementById('sales-date').value;
+            if (!dateInput) {
+                alert('Please select a date first.');
+                return;
+            }
+
+            // Find the product in the sales data
+            const product = dailySalesData.sales.find(item => item.id === productId);
+            if (!product) {
+                alert('Product not found in sales data.');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete all sales for "${product.name}" (${product.total_quantity} units, ₹${product.total_revenue.toFixed(2)}) from ${dateInput}?\n\nThis will remove the order items from the database.`)) {
+                // Call API to delete
+                API.deleteDailySale(productId, dateInput)
+                    .then(response => {
+                        alert(`Successfully deleted ${response.deleted_count} sale item(s):\n- Quantity: ${response.deleted_quantity}\n- Revenue: ₹${response.deleted_revenue.toFixed(2)}`);
+                        
+                        // Remove from local data
+                        dailySalesData.sales = dailySalesData.sales.filter(item => item.id !== productId);
+                        
+                        // Refresh the UI
+                        loadDailySales();
+                    })
+                    .catch(err => {
+                        console.error('Error deleting sale:', err);
+                        alert('Error deleting sale: ' + (err.message || 'Unknown error'));
+                    });
+            }
+        }
+
+        // Add Product handler (from Stock Check page)
+        document.getElementById('sc-add-btn').addEventListener('click', async () => {
+            const msg = document.getElementById('sc-message');
+            msg.textContent = '';
+            const barcode = document.getElementById('sc-barcode').value.trim();
+            const name = document.getElementById('sc-name').value.trim();
+            const category = document.getElementById('sc-category').value;
+            const priceVal = document.getElementById('sc-price').value;
+            const stockVal = document.getElementById('sc-stock').value;
+
+            // Basic validation
+            if (!barcode || !/^[0-9]{8,13}$/.test(barcode)) {
+                msg.style.color = '#991b1b';
+                msg.textContent = 'Please provide a valid numeric barcode (8-13 digits).';
+                return;
+            }
+            if (!name) {
+                msg.style.color = '#991b1b';
+                msg.textContent = 'Product name is required.';
+                return;
+            }
+            if (!category) {
+                msg.style.color = '#991b1b';
+                msg.textContent = 'Select a category.';
+                return;
+            }
+            const price = parseFloat(priceVal);
+            const stock = parseInt(stockVal) || 0;
+            if (isNaN(price) || price < 0) {
+                msg.style.color = '#991b1b';
+                msg.textContent = 'Enter a valid price.';
+                return;
+            }
+
+            // Disable button while creating
+            const btn = document.getElementById('sc-add-btn');
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+
+            try {
+                await API.createProduct({
+                    barcode: barcode,
+                    name: name,
+                    category: category,
+                    price: price,
+                    stock_quantity: stock
+                });
+
+                msg.style.color = '#065f46';
+                msg.textContent = 'Product added successfully.';
+
+                // Clear inputs
+                document.getElementById('sc-barcode').value = '';
+                document.getElementById('sc-name').value = '';
+                document.getElementById('sc-category').value = '';
+                document.getElementById('sc-price').value = '';
+                document.getElementById('sc-stock').value = '';
+
+                // Refresh list
+                await renderLowStock();
+            } catch (err) {
+                console.error('Error adding product:', err);
+                msg.style.color = '#991b1b';
+                msg.textContent = err.message || 'Error adding product';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Add Product';
+            }
+        });
+    </script>
+</body>
+</html>
