@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statements - Wear Well</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { background: #f8fafc; }
+        .statements-container { max-width: 1200px; margin: 20px auto; padding: 0 10px; }
+        .statement-header { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .control-group { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 12px; flex-wrap: wrap; }
+        .control-group > div { display: flex; flex-direction: column; }
+        .control-group label { font-weight: 600; margin-bottom: 4px; }
+        .control-group input, .control-group select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; }
+        .control-group button { padding: 8px 16px; }
+        .manual-entries { background: #f1f5f9; padding: 12px; border-radius: 6px; margin: 12px 0; }
+        .manual-entries h4 { margin-top: 0; }
+        .manual-entry-form { display: flex; gap: 8px; }
+        .manual-entry-list { margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
+        .entry-item { background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #3b82f6; display: flex; justify-content: space-between; align-items: center; }
+        .remove-entry { background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; }
+        .results-section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .results-table { width: 100%; border-collapse: collapse; max-height: 400px; overflow-y: auto; display: block; }
+        .results-table thead { background: #f1f5f9; position: sticky; top: 0; }
+        .results-table th, .results-table td { padding: 10px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .results-table th { font-weight: 600; }
+        .totals-box { background: #f1f5f9; padding: 15px; border-radius: 6px; margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+        .total-item { padding: 10px; background: white; border-radius: 4px; }
+        .total-label { font-size: 12px; color: #666; }
+        .total-value { font-size: 18px; font-weight: 700; color: #222; margin-top: 4px; }
+        .action-buttons { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+        .btn { padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-secondary { background: #94a3b8; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn:hover { opacity: 0.9; }
+        .back-btn { margin-top: 10px; }
+        .loading { text-align: center; color: #999; padding: 20px; }
+        .error { color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 4px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <div class="statements-container">
+        <div class="back-btn">
+            <button class="btn btn-secondary" onclick="window.location='/'">← Back to Home</button>
+        </div>
+
+        <div class="statement-header">
+            <h2>Generate Statement</h2>
+            
+            <div class="control-group">
+                <div>
+                    <label for="stmt-start">Start Date</label>
+                    <input type="date" id="stmt-start">
+                </div>
+                <div>
+                    <label for="stmt-end">End Date</label>
+                    <input type="date" id="stmt-end">
+                </div>
+                <div>
+                    <label for="stmt-format">Print Format</label>
+                    <select id="stmt-format">
+                        <option value="browser">Browser Preview</option>
+                        <option value="a4" selected>A4 (Print)</option>
+                        <option value="thermal">Thermal (Plain)</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="generate-btn">Generate Statement</button>
+            </div>
+
+            <div class="manual-entries">
+                <h4 style="margin: 0 0 10px 0;">Manual Entries (Optional)</h4>
+                <div class="manual-entry-form">
+                    <input type="text" id="manual-desc" placeholder="Description" style="flex: 1;">
+                    <input type="number" id="manual-amt" placeholder="Amount" style="width: 120px;">
+                    <button class="btn btn-primary" id="add-manual-btn">Add Entry</button>
+                </div>
+                <div class="manual-entry-list" id="manual-list"></div>
+            </div>
+        </div>
+
+        <div id="error-msg"></div>
+
+        <div class="results-section" id="results-section" style="display: none;">
+            <div id="results-content"></div>
+            <div class="totals-box" id="totals-box"></div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="print-btn">Print</button>
+                <button class="btn btn-secondary" id="clear-btn">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script>
+        let manualEntries = [];
+        const startInput = document.getElementById('stmt-start');
+        const endInput = document.getElementById('stmt-end');
+        const formatSelect = document.getElementById('stmt-format');
+        const generateBtn = document.getElementById('generate-btn');
+        const addManualBtn = document.getElementById('add-manual-btn');
+        const manualDescInput = document.getElementById('manual-desc');
+        const manualAmtInput = document.getElementById('manual-amt');
+        const manualListDiv = document.getElementById('manual-list');
+        const resultsSection = document.getElementById('results-section');
+        const resultsContent = document.getElementById('results-content');
+        const totalsBox = document.getElementById('totals-box');
+        const printBtn = document.getElementById('print-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const errorDiv = document.getElementById('error-msg');
+
+        // Initialize with today's date
+        const today = new Date().toISOString().slice(0, 10);
+        startInput.value = today;
+        endInput.value = today;
+
+        function renderManualEntries() {
+            manualListDiv.innerHTML = manualEntries.map((m, i) =>
+                `<div class="entry-item">
+                    <div><strong>${m.desc}</strong> <div style="color:#666; font-size:12px;">₹${Number(m.amount).toFixed(2)}</div></div>
+                    <button class="remove-entry" onclick="removeManualEntry(${i})">Remove</button>
+                </div>`
+            ).join('');
+        }
+
+        window.removeManualEntry = function(idx) {
+            manualEntries.splice(idx, 1);
+            renderManualEntries();
+        };
+
+        addManualBtn.addEventListener('click', () => {
+            const desc = manualDescInput.value.trim();
+            const amt = parseFloat(manualAmtInput.value);
+            if (!desc || isNaN(amt)) {
+                alert('Enter valid description and amount');
+                return;
+            }
+            manualEntries.push({desc, amount: amt});
+            manualDescInput.value = '';
+            manualAmtInput.value = '';
+            renderManualEntries();
+        });
+
+        async function generateStatement() {
+            errorDiv.innerHTML = '';
+            if (!startInput.value || !endInput.value) {
+                errorDiv.innerHTML = '<div class="error">Please select start and end dates</div>';
+                return;
+            }
+
+            resultsContent.innerHTML = '<div class="loading">Loading statement...</div>';
+            resultsSection.style.display = 'block';
+
+            try {
+                const resp = await API.request(`/api/statements?start=${startInput.value}&end=${endInput.value}`);
+                const orders = resp.orders || [];
+                const totals = resp.totals || {};
+
+                // Render orders table
+                const manualTotal = manualEntries.reduce((s, m) => s + Number(m.amount || 0), 0);
+                const combinedTotal = Number(totals.grand_total || 0) + manualTotal;
+
+                resultsContent.innerHTML = `
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th style="text-align: right;">Total (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${orders.map(o => `
+                                <tr>
+                                    <td>${new Date(o.order_date).toLocaleString()}</td>
+                                    <td><strong>${o.order_number}</strong></td>
+                                    <td>${o.customer ? o.customer.name : '-'}</td>
+                                    <td style="text-align: right;">₹${Number(o.grand_total || 0).toFixed(2)}</td>
+                                </tr>
+                            `).join('') || '<tr><td colspan="4" class="loading">No orders found</td></tr>'}
+                        </tbody>
+                    </table>
+                `;
+
+                totalsBox.innerHTML = `
+                    <div class="total-item">
+                        <div class="total-label">Number of Orders</div>
+                        <div class="total-value">${totals.count || 0}</div>
+                    </div>
+                    <div class="total-item">
+                        <div class="total-label">Sales Total</div>
+                        <div class="total-value">₹${Number(totals.grand_total || 0).toFixed(2)}</div>
+                    </div>
+                    <div class="total-item">
+                        <div class="total-label">Manual Entries</div>
+                        <div class="total-value">₹${manualTotal.toFixed(2)}</div>
+                    </div>
+                    <div class="total-item" style="background: #dcfce7; border-left: 4px solid #22c55e;">
+                        <div class="total-label" style="color: #166534;">Grand Total</div>
+                        <div class="total-value" style="color: #16a34a;">₹${combinedTotal.toFixed(2)}</div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error('Statement error', err);
+                errorDiv.innerHTML = `<div class="error">Error: ${err.message || err}</div>`;
+                resultsSection.style.display = 'none';
+            }
+        }
+
+        async function printStatement() {
+            if (!startInput.value || !endInput.value) {
+                alert('Please generate a statement first');
+                return;
+            }
+
+            // Check if results are showing
+            if (!resultsContent.innerHTML || resultsContent.innerHTML.includes('Loading...')) {
+                alert('Please generate a statement first');
+                return;
+            }
+
+            const fmt = formatSelect.value;
+            const payload = {
+                start: startInput.value,
+                end: endInput.value,
+                manual_entries: manualEntries,
+                format: fmt
+            };
+
+            console.log('Printing with format:', fmt, 'Payload:', payload);
+
+            try {
+                if (fmt === 'browser') {
+                    const html = resultsContent.innerHTML + totalsBox.innerHTML;
+                    const w = window.open('', '_blank');
+                    w.document.write(`
+                        <html><head><title>Statement</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 20px; }
+                            table { width: 100%; border-collapse: collapse; }
+                            th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+                            th { background: #f1f5f9; }
+                        </style></head><body>${html}</body></html>
+                    `);
+                    w.document.close();
+                    w.print();
+                } else {
+                    const resp = await API.request('/api/statements/print', {
+                        method: 'POST',
+                        body: JSON.stringify(payload),
+                        headers: {'Content-Type': 'application/json'}
+                    });
+
+                    console.log('Print response:', resp, 'Format:', fmt);
+
+                    if (fmt === 'a4' && resp.html) {
+                        const w = window.open('', '_blank');
+                        w.document.write(resp.html);
+                        w.document.close();
+                    } else if (fmt === 'thermal') {
+                        if (!resp.text) {
+                            console.error('No text in response:', resp);
+                            alert('Error: Server did not return thermal print data. Check console.');
+                            return;
+                        }
+                        const w = window.open('', '_blank');
+                        const escapedText = escapeHtml(resp.text);
+                        w.document.write(`<html><head><title>Statement - Thermal</title><style>body { font-family: monospace; white-space: pre-wrap; padding: 20px; overflow-x: auto; }</style></head><body><pre>${escapedText}</pre></body></html>`);
+                        w.document.close();
+                        w.print();
+                    } else {
+                        console.error('Unexpected response structure:', resp);
+                        alert('Print failed: Invalid server response. Check console for details.');
+                    }
+                }
+            } catch (err) {
+                console.error('Print error:', err);
+                alert('Print failed: ' + (err.message || err));
+            }
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        generateBtn.addEventListener('click', generateStatement);
+        printBtn.addEventListener('click', printStatement);
+        clearBtn.addEventListener('click', () => {
+            resultsSection.style.display = 'none';
+            errorDiv.innerHTML = '';
+        });
+    </script>
+</body>
+</html>
