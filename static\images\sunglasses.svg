@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
+  <!-- Left Frame -->
+  <rect x="8" y="30" width="25" height="35" fill="none" stroke="#1a1a1a" stroke-width="2" rx="4"/>
+  <circle cx="20.5" cy="35" r="8" fill="#87ceeb" opacity="0.7" stroke="#1a1a1a" stroke-width="1"/>
+  
+  <!-- Bridge -->
+  <line x1="33" y1="47.5" x2="67" y2="47.5" stroke="#1a1a1a" stroke-width="2"/>
+  
+  <!-- Right Frame -->
+  <rect x="67" y="30" width="25" height="35" fill="none" stroke="#1a1a1a" stroke-width="2" rx="4"/>
+  <circle cx="79.5" cy="35" r="8" fill="#87ceeb" opacity="0.7" stroke="#1a1a1a" stroke-width="1"/>
+  
+  <!-- Left Temple -->
+  <path d="M 8 45 Q 2 50 2 60" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Right Temple -->
+  <path d="M 92 45 Q 98 50 98 60" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Highlight on Lenses -->
+  <ellipse cx="22" cy="33" rx="3" ry="4" fill="white" opacity="0.6"/>
+  <ellipse cx="78" cy="33" rx="3" ry="4" fill="white" opacity="0.6"/>
+</svg>
