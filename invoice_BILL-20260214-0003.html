@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Invoice - BILL-20260214-0003</title>
+    <style>
+        @page { size: A4; margin: 20mm; }
+        body { font-family: Arial, sans-serif; font-size: 12px; color: #111; }
+        /* Use a three-column header to fill space */
+        .header { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; align-items:start; }
+        .shop { font-size:18px; font-weight:700; }
+        .shop small { display:block; font-weight:400; font-size:12px; margin-top:3px; }
+        /* Ensure phone appears on its own line */
+        .shop .phone { display:block; margin-top:6px; font-size:12px; color:#222; }
+        .meta { text-align:right; font-size:13px; }
+        .meta div { margin-bottom:4px; }
+        /* Customer block uses two columns to reduce empty space */
+        .customer { margin-top: 12px; border: 1px solid #ddd; padding: 10px; display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+        .customer .label { font-weight:600; color:#333; }
+        .items { width:100%; border-collapse: collapse; margin-top: 12px; }
+        .items th, .items td { border: 1px solid #ddd; padding: 8px; }
+        .items th { background:#f7f7f7; text-align:left; }
+        .totals { margin-top: 12px; width: 100%; display:flex; justify-content:flex-end; }
+        .totals table { width: 320px; border-collapse: collapse; }
+        .totals td { padding:6px 8px; }
+        .right { text-align:right; }
+        .center { text-align:center; }
+        .small { font-size: 11px; color:#555; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <div class="shop">Wear Well</div>
+            <small class="small">Kammavarpalayam,kanchipuram-631502</small>
+            <span class="phone">Phone: 7010282192,8668184181</span>
+            
+        </div>
+
+        <div class="center">
+            <div style="font-size:20px; font-weight:700;">INVOICE</div>
+            <div style="margin-top:8px;">Bill No: <strong>BILL-20260214-0003</strong></div>
+        </div>
+
+        <div class="meta">
+            <div>Date: 2026-02-14T07:00:53.692061</div>
+            <div>Cashier: vishal</div>
+            <div>Status: completed</div>
+        </div>
+    </div>
+
+    <div class="customer">
+        <div>
+            <div class="label">Customer</div>
+            <div>Dhinakar</div>
+        </div>
+        <div>
+            <div class="label">Contact</div>
+            <div>Phone: 8220925940</div>
+        </div>
+        <div>
+            <div class="label">Address</div>
+            <div style="grid-column: span 2;">Perumal Kovil st Arunthathiyarpalayam</div>
+        </div>
+        <div>
+            <div class="label">Notes</div>
+            <div>-</div>
+        </div>
+    </div>
+
+    <table class="items">
+        <thead>
+            <tr>
+                <th style="width:40%">Item</th>
+                <th style="width:8%" class="center">Qty</th>
+                <th style="width:17%" class="right">Unit Price</th>
+                <th style="width:10%" class="center">Disc %</th>
+                <th style="width:25%" class="right">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            <tr>
+                <td>Offer T-Shirt</td>
+                <td class="center">2</td>
+                <td class="right">149.00</td>
+                <td class="center">19.0%</td>
+                <td class="right">241.38</td>
+            </tr>
+            
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <table>
+            <tr>
+                <td class="right small">Subtotal:</td>
+                <td class="right">241.38</td>
+            </tr>
+            
+            <tr>
+                <td class="right"><strong>Grand Total:</strong></td>
+                <td class="right"><strong>241.38</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="margin-top:20px;">Payment Method: UPI</div>
+    <div style="margin-top:18px; text-align:center; font-weight:600;">Thank you for your purchase! 😊 Visit again.</div>
+
+</body>
+</html>
