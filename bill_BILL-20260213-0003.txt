@@ -1,0 +1,18 @@
+Wear Well
+Kammavarpalayam,kanchipuram-631502
+Phone 7010282192,8668184181
+
+Bill No BILL-20260213-0003
+Date 2026-02-13T07:10:28.968450
+Cashier vishal
+
+Item Qty Price
+T-Shirt 2 298.00
+Offer shirt 1 249.00
+
+Subtotal 547.00
+Grand Total 547.00
+
+Payment Cash
+
+Thank you for shopping
