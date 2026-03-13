@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Invoice - {{ order.order_number }}</title>
+    <style>
+        @page { size: A4; margin: 20mm; }
+        body { font-family: Arial, sans-serif; font-size: 12px; color: #111; }
+        /* Use a three-column header to fill space */
+        .header { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; align-items:start; }
+        .shop { font-size:18px; font-weight:700; }
+        .shop small { display:block; font-weight:400; font-size:12px; margin-top:3px; }
+        /* Ensure phone appears on its own line */
+        .shop .phone { display:block; margin-top:6px; font-size:12px; color:#222; }
+        .meta { text-align:right; font-size:13px; }
+        .meta div { margin-bottom:4px; }
+        /* Customer block uses two columns to reduce empty space */
+        .customer { margin-top: 12px; border: 1px solid #ddd; padding: 10px; display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+        .customer .label { font-weight:600; color:#333; }
+        .items { width:100%; border-collapse: collapse; margin-top: 12px; }
+        .items th, .items td { border: 1px solid #ddd; padding: 8px; }
+        .items th { background:#f7f7f7; text-align:left; }
+        .totals { margin-top: 12px; width: 100%; display:flex; justify-content:flex-end; }
+        .totals table { width: 320px; border-collapse: collapse; }
+        .totals td { padding:6px 8px; }
+        .right { text-align:right; }
+        .center { text-align:center; }
+        .small { font-size: 11px; color:#555; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <div class="shop">{{ shop_name }}</div>
+            {% if shop_address %}<small class="small">{{ shop_address }}</small>{% endif %}
+            {% if shop_phone %}<span class="phone">Phone: {{ shop_phone }}</span>{% endif %}
+            {% if shop_gstin %}<small class="small">GSTIN: {{ shop_gstin }}</small>{% endif %}
+        </div>
+
+        <div class="center">
+            <div style="font-size:20px; font-weight:700;">INVOICE</div>
+            <div style="margin-top:8px;">Bill No: <strong>{{ order.order_number }}</strong></div>
+        </div>
+
+        <div class="meta">
+            <div>Date: {{ order.order_date }}</div>
+            <div>Cashier: {{ order.cashier_name }}</div>
+            <div>Status: {{ order.status }}</div>
+        </div>
+    </div>
+
+    <div class="customer">
+        <div>
+            <div class="label">Customer</div>
+            <div>{{ order.customer.name if order.customer else '-' }}</div>
+        </div>
+        <div>
+            <div class="label">Contact</div>
+            <div>Phone: {{ order.customer.phone if order.customer else '-' }}{% if order.customer.email %} &nbsp; | &nbsp; {{ order.customer.email }}{% endif %}</div>
+        </div>
+        <div>
+            <div class="label">Address</div>
+            <div style="grid-column: span 2;">{{ order.customer.address if order.customer else '-' }}</div>
+        </div>
+        <div>
+            <div class="label">Notes</div>
+            <div>{{ order.notes or '-' }}</div>
+        </div>
+    </div>
+
+    <table class="items">
+        <thead>
+            <tr>
+                <th style="width:40%">Item</th>
+                <th style="width:8%" class="center">Qty</th>
+                <th style="width:17%" class="right">Unit Price</th>
+                <th style="width:10%" class="center">Disc %</th>
+                <th style="width:25%" class="right">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for it in order['items'] %}
+            <tr>
+                <td>{{ (it.product.name if it.product else it.product_id) }}</td>
+                <td class="center">{{ it.quantity }}</td>
+                <td class="right">{{ '%.2f'|format(it.unit_price) }}</td>
+                <td class="center">{% if it.discount_percent and it.discount_percent > 0 %}{{ it.discount_percent }}%{% endif %}</td>
+                <td class="right">{{ '%.2f'|format(it.total_price) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <table>
+            <tr>
+                <td class="right small">Subtotal:</td>
+                <td class="right">{{ '%.2f'|format(order.subtotal) }}</td>
+            </tr>
+            {% if order.discount_amount and order.discount_amount > 0 %}
+            <tr>
+                <td class="right small">Discount:</td>
+                <td class="right">{{ '%.2f'|format(order.discount_amount) }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td class="right"><strong>Grand Total:</strong></td>
+                <td class="right"><strong>{{ '%.2f'|format(order.grand_total) }}</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="margin-top:20px;">Payment Method: {{ order.payment_method }}</div>
+    <div style="margin-top:18px; text-align:center; font-weight:600;">Thank you for your purchase! 😊 Visit again.</div>
+
+</body>
+</html>
